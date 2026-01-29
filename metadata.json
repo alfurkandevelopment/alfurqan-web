@@ -1,5 +1,7 @@
 {
   "name": "Al-Furqan Association Portal",
   "description": "A comprehensive management system for Al-Furqan Association including donation tracking, role management, and volunteering CRM.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }
