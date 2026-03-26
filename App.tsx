@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, createContext } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
@@ -18,7 +17,6 @@ import { UserRole, Language } from './types';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { doc, getDoc, onSnapshot, getDocFromServer } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { decryptFile } from './lib/security';
 
 interface LanguageContextType {
   lang: Language;
@@ -56,23 +54,20 @@ const App: React.FC = () => {
     document.body.className = `bg-gray-50 text-gray-800 font-sans ${dir === 'rtl' ? 'text-right' : 'text-left'}`;
   }, [lang]);
 
-  // استقرار فحص الإعداد: نتجنب تغيير الحالة إلا بعد التأكد التام من استجابة Firestore
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'system', 'config'), (snap) => {
       if (snap.exists()) {
         const isComplete = snap.data().isSetupComplete;
         setIsSetupNeeded(!isComplete);
       } else {
-        // إذا لم يكن المستند موجوداً، فالنظام يحتاج لتهيئة
         setIsSetupNeeded(true);
       }
     }, (err) => {
       console.error("Setup check error:", err);
-      // في حالة وجود خطأ (مثل نقص الصلاحيات)، نفترض أن الإعداد تم لعدم الدخول في حلقة مفرغة
       if (isSetupNeeded === null) setIsSetupNeeded(false);
     });
     return () => unsub();
-  }, []);
+  }, [isSetupNeeded]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
