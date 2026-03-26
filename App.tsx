@@ -13,10 +13,11 @@ import LanguageLearning from './pages/LanguageLearning';
 import About from './pages/About';
 import ProgramsList from './pages/ProgramsList';
 import ActivitiesList from './pages/ActivitiesList';
+import ProductsList from './pages/ProductsList';
 import { UserRole, Language } from './types';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { doc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { doc, getDoc, onSnapshot, getDocFromServer } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { decryptFile } from './lib/security';
 
 interface LanguageContextType {
@@ -34,6 +35,19 @@ const App: React.FC = () => {
   const [lang, setLang] = useState<Language>(Language.AR);
   const [loading, setLoading] = useState(true);
   const [isSetupNeeded, setIsSetupNeeded] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    async function testConnection() {
+      try {
+        await getDocFromServer(doc(db, 'system', 'connection_test'));
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('the client is offline')) {
+          console.error("Please check your Firebase configuration.");
+        }
+      }
+    }
+    testConnection();
+  }, []);
 
   useEffect(() => {
     const dir = lang === Language.AR ? 'rtl' : 'ltr';
@@ -114,6 +128,7 @@ const App: React.FC = () => {
             <Route path="/aid-request" element={<AidRequest />} />
             <Route path="/programs" element={<ProgramsList />} />
             <Route path="/activities" element={<ActivitiesList />} />
+            <Route path="/products" element={<ProductsList />} />
             <Route path="/language-learning" element={<LanguageLearning />} />
             <Route path="/programs/:id" element={<SectionPage type="program" icon="quran" />} />
             <Route path="*" element={<Navigate to="/" replace />} />
